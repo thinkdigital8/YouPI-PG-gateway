@@ -88,3 +88,10 @@ For production deployment:
 2. Point your public domain (e.g. `pay.yourdomain.com`) to port `7000` (Checkout Portal) or `6100` (Payment API).
    *The Checkout Portal automatically proxies all `/api/*` requests to the Payment API.*
 3. Update `BASE_PAYMENT_API_URL` and `BASE_CHECKOUT_URL` in `.env` to match your public HTTPS domain.
+
+---
+
+## 5. Free Hosting
+
+To run the gateway live at no cost (Oracle Cloud Always Free VM + free sslip.io hostnames + automatic HTTPS),
+see [FREE_HOSTING.md](FREE_HOSTING.md) and the one-command installer `deploy/free-vm/setup.sh`.
