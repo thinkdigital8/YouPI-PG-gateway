@@ -221,8 +221,13 @@ export class ProcessManager extends EventEmitter {
    * Starts all managed services.
    */
   async startAll() {
+    // Comma-separated service ids to skip, e.g. on memory-limited hosts.
+    const disabled = (process.env.YOUPI_DISABLED_SERVICES || '').split(',').map(s => s.trim()).filter(Boolean);
     for (const svc of this.services) {
       if (svc.legacy && process.env.ENABLE_LEGACY_CHROME_OBSERVERS !== 'true') {
+        continue;
+      }
+      if (disabled.includes(svc.id)) {
         continue;
       }
       try {
