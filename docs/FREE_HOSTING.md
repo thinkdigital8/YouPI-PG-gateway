@@ -10,7 +10,8 @@ always-on VM with persistent storage. "Serverless" free tiers can't run it.
 | **Oracle Cloud Always Free** | ARM VM up to 4 OCPU / 24 GB RAM, 200 GB disk, forever | ✅ **Recommended** | Card needed for identity check, not charged |
 | Google Cloud Free Tier | 1 × e2-micro (1 GB RAM), 30 GB disk, US regions only | ⚠️ Works, tight on RAM | Add 1–2 GB swap |
 | Your own PC + Cloudflare Tunnel | Free | ⚠️ Works while the PC is on | Needs a domain on Cloudflare |
-| Render / Railway / Vercel / Netlify free | — | ❌ | One port only, sleeps when idle, disk wiped on restart (SQLite data lost) |
+| **Render free** (testing) | 1 web service, 512 MB RAM | ✅ For testing | One URL, sleeps after 15 min idle, data resets on restart — see §7 |
+| Railway / Vercel / Netlify free | — | ❌ | No always-on free Node service with disk |
 
 ## 2. Domain (also free)
 
@@ -90,3 +91,24 @@ redirect URI `https://pay-gmail.<ip>.sslip.io/oauth/callback`.
 | Gateway not starting | `journalctl -u youpi -n 100` |
 | 1 GB VM runs out of memory | `sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile && echo '/swapfile none swap sw 0 0' \| sudo tee -a /etc/fstab` |
 | Oracle reclaims idle VM | Always Free instances idle < 20% CPU for 7 days may be reclaimed; upgrading the account to Pay-As-You-Go (still ₹0 within free limits) prevents this |
+
+## 7. Quick test deploy on Render (free, no card)
+
+Single-URL test deployment via `render.yaml`. Good for trying checkout end to end; use a VM for real traffic.
+
+1. Open <https://render.com/deploy?repo=https://github.com/thinkdigital8/YouPI-PG-gateway> and sign in with GitHub
+2. Click **Apply** — Render builds and starts `youpi-pg` (≈3–5 min)
+3. Get the admin token: service → **Environment** → `ADMIN_API_TOKEN`
+
+| URL (`https://<service>.onrender.com`) | What |
+| :--- | :--- |
+| `/` | Demo store — buy a coin pack to open the checkout |
+| `/youpi.js` | Checkout SDK for merchant sites |
+| `/checkout/:id`, `/api/v1/*` | Checkout page and payment API |
+| `/admin` | Merchant admin (paste `ADMIN_API_TOKEN`), set your receiving UPI ID here |
+
+| Limit | Effect |
+| :--- | :--- |
+| Sleeps after 15 min idle | First request after sleep takes ~1 min |
+| No persistent disk | Database and admin settings reset on every restart / deploy |
+| 512 MB RAM | SMS (legacy) and Gmail observers are disabled (`YOUPI_DISABLED_SERVICES`); pair the Android observer app with the Render URL instead |

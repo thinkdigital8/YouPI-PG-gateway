@@ -1,0 +1,20 @@
+# Render Blueprint — free single-host test deployment of YOUPI PG.
+# Deploy: https://render.com/deploy?repo=https://github.com/thinkdigital8/YouPI-PG-gateway
+# Free tier limits: sleeps after 15 min idle, no persistent disk (database resets on every restart/deploy).
+services:
+  - type: web
+    name: youpi-pg
+    runtime: node
+    plan: free
+    buildCommand: npm ci --omit=dev && npm run db:setup
+    startCommand: node scripts/render-start.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Keeps the free 512 MB instance within memory; the Android observer app still works.
+      - key: YOUPI_DISABLED_SERVICES
+        value: sms-observer,gmail-observer
+      # Token for the Merchant Admin login at <url>/admin (read it in Render > Environment).
+      - key: ADMIN_API_TOKEN
+        generateValue: true

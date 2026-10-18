@@ -126,6 +126,30 @@ export function resolveRuntimeUrls(options = {}) {
 
   if (mode === 'production') {
 
+    // Single-host deployments (e.g. Render free tier) publish every service behind one URL:
+    // checkout, API and store at the root, merchant admin under /admin (see scripts/render-start.js).
+    const singleHost = (process.env.PUBLIC_BASE_URL || '').trim().replace(/\/+$/, '');
+    if (singleHost) {
+      const hostname = singleHost.replace(/^https?:\/\//, '');
+      return {
+        mode: 'production',
+        isProduction: true,
+        domain,
+        prefix,
+        routes: deriveCloudflareRoutes({ domain, prefix }),
+        checkoutUrl: singleHost,
+        checkoutHostname: hostname,
+        apiUrl: singleHost,
+        apiHostname: hostname,
+        adminUrl: `${singleHost}/admin`,
+        adminHostname: hostname,
+        gmailUrl: singleHost,
+        gmailHostname: hostname,
+        storeUrl: singleHost,
+        storeHostname: hostname
+      };
+    }
+
     const routes = deriveCloudflareRoutes({ domain, prefix });
     const getRoute = (role) => routes.find(r => r.role === role);
 
